@@ -1,13 +1,13 @@
 name: Docker
 
 on:
-  # schedule:
-  #   - cron: "0 1 * * *"
+  schedule:
+    - cron: "0 1 * * *"
   push:
     branches:
-      - "**"
+      - "main"
     tags:
-      - "v*.*.*"
+      - "*.*.*"
   pull_request:
   workflow_dispatch:
 
@@ -29,13 +29,9 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/synapticon_ros2_control
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=schedule
+            type=schedule, pattern=latest
             type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
+            type=ref,event=tag
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -56,6 +52,6 @@ jobs:
         with:
           build-args: ROS_DISTRO=${{matrix.ROS_DISTRO}}
           push: ${{ github.event_name != 'pull_request' }} # only push from non-pull_request triggers
-          #tags: ghcr.io/synapticon/synapticon_ros2_control:latest
+          #tags: ghcr.io/synapticon/synapticon_ros2_control:latest --> replaced by docker/metadata-action config
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
